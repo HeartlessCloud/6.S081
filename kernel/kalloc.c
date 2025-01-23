@@ -80,3 +80,21 @@ kalloc(void)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
 }
+
+// to get the free memory, unit byte
+uint64
+getFreeMemory(void) 
+{
+  struct run* curpage;
+  int count = 0;
+
+  curpage = kmem.freelist;
+  while(curpage) {
+    count++;
+    curpage = curpage -> next;
+  }
+
+  uint64 freeMemoryTotal = count * PGSIZE;
+
+  return freeMemoryTotal;
+}

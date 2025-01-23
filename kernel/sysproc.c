@@ -6,6 +6,8 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"
+#include "kalloc.h"
 
 uint64
 sys_exit(void)
@@ -94,4 +96,39 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+uint64
+sys_trace(void)
+{
+  int n; // use to store parameter mask
+  argint(0, &n);
+
+  if (n < 0) {
+    printf("The input parameter is less than 0");
+    return -1;
+  }
+
+  else {
+    myproc()->trace_num = n;
+    return 0;
+  }
+}
+
+uint64
+sys_sysinfo(void)
+{
+  struct sysinfo si;
+  uint64 destva;
+
+  argaddr(0, &destva);
+  si.freemem = getFreeMemory();
+  si.nproc = getUsedProc();
+
+  //now what we need to do is to copy struct si from kelnel space to user space.
+  if(copyout(myproc()->pagetable, destva, (char*)&si, sizeof(si)) < 0) {
+    return -1;
+  }
+
+  return 0;
 }
